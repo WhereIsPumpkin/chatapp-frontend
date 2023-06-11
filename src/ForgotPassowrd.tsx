@@ -1,12 +1,19 @@
 import { useNavigate } from "react-router-dom";
 import { useState, FormEvent } from "react";
+import axios from "axios";
 
 const ForgotPassowrd = () => {
   const navigate = useNavigate();
   const [email, setEmail] = useState<string>("");
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     navigate("/reset-password-notification");
+    try {
+      await axios.post("/recover-password", { email });
+    } catch (error) {
+      console.error(error);
+      alert("Something went wrong. Please try again later.");
+    }
   };
   return (
     <div className="flex flex-col gap-8 px-8 pt-4 font-poppins">
