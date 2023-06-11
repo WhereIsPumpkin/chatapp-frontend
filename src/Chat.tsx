@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 
 const Chat = () => {
   const [ws, setWs] = useState<WebSocket | undefined>(undefined);
+  console.log(ws);
 
   useEffect(() => {
     const ws = new WebSocket("ws://localhost:4040");

@@ -1,10 +1,10 @@
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useState, FormEvent } from "react";
 
 const ForgotPassowrd = () => {
   const navigate = useNavigate();
   const [email, setEmail] = useState<string>("");
-  const handleSubmit = (e) => {
+  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     navigate("/reset-password-notification");
   };

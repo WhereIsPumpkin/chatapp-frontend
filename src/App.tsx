@@ -1,6 +1,6 @@
 import axios from "axios";
 import { UserContextProvider } from "./UserContext";
-import { Route, Routes as RoutesDOM, Navigate } from "react-router-dom";
+import { Route, Routes as RoutesDOM } from "react-router-dom";
 import Routes from "./Routes";
 import ResetPasswordNotification from "./ResetPasswordNotification";
 import ForgotPassowrd from "./ForgotPassowrd";
