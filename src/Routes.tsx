@@ -4,7 +4,7 @@ import { useContext } from "react";
 import { UserContext } from "./UserContext";
 
 const Routes = () => {
-  const { username, id } = useContext(UserContext);
+  const { username } = useContext(UserContext);
 
   if (username) {
     return <Chat />;
