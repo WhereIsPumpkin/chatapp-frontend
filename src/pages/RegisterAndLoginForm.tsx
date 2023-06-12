@@ -1,8 +1,8 @@
 import axios from "axios";
 import { useState, FormEvent, useContext } from "react";
-import { UserContext } from "./UserContext.tsx";
+import { UserContext } from "../UserContext.tsx";
 import { useNavigate } from "react-router-dom";
-import logo from "./assets/logo.png";
+import logo from "../assets/logo.png";
 
 const RegisterAndLoginForm = () => {
   const navigate = useNavigate();

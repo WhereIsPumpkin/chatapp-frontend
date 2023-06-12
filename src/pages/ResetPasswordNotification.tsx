@@ -1,4 +1,4 @@
-import emailIcon from "./assets/Mail.png";
+import emailIcon from "../assets/Mail.png";
 import { useNavigate } from "react-router-dom";
 
 const ResetPasswordNotification = () => {

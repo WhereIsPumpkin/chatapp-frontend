@@ -1,5 +1,5 @@
-import Register from "./RegisterAndLoginForm";
-import Chat from "./Chat";
+import Register from "./pages/RegisterAndLoginForm";
+import Chat from "./pages/Chat";
 import { useContext } from "react";
 import { UserContext } from "./UserContext";
 
