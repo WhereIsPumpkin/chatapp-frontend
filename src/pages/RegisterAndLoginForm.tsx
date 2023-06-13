@@ -74,12 +74,12 @@ const RegisterAndLoginForm = () => {
         </div>
         {isLoginOrRegister === "login" && (
           <div className="text-right">
-            <button
+            <a
               onClick={() => navigate("/password-recovery")}
               className="text-customBlue text-xs font-normal"
             >
               Forgot Password?
-            </button>
+            </a>
           </div>
         )}
 
