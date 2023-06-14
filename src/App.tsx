@@ -7,7 +7,7 @@ import UpdatePassowrd from "./pages/RecoverPassword";
 import ForgotPassowrd from "./pages/ForgotPassowrd";
 
 function App() {
-  axios.defaults.baseURL = "http://localhost:4040";
+  axios.defaults.baseURL = "http://localhost:5050";
   axios.defaults.withCredentials = true;
 
   return (

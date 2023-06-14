@@ -1,15 +1,18 @@
 import { useEffect, useState, useContext } from "react";
 import Avatar from "../components/Avatar.jsx";
+import { uniqBy } from "lodash";
 import { UserContext } from "../UserContext.js";
 
 const Chat = () => {
-  const [ws, setWs] = useState<WebSocket | undefined>(undefined);
+  const [ws, setWs] = useState(null);
   const [onlinePeople, setOnlinePeople] = useState({});
   const [selectedUserId, setSelectedUserId] = useState(null);
+  const [newMessageText, setNewMessageText] = useState("");
+  const [messages, setMessages] = useState([]);
   const { username, id } = useContext(UserContext);
 
   useEffect(() => {
-    const ws = new WebSocket("ws://localhost:4040");
+    const ws = new WebSocket("ws://localhost:5050");
     setWs(ws);
     ws.addEventListener("message", handleMessage);
   }, []);
@@ -26,10 +29,35 @@ const Chat = () => {
     const messageData = JSON.parse(ev.data);
     if ("online" in messageData) {
       showOnlinePeople(messageData.online);
+    } else if ("text" in messageData) {
+      setMessages((prev) => [...prev, { ...messageData }]);
     }
   }
+
+  function sendMessage(ev) {
+    ev.preventDefault();
+    ws.send(
+      JSON.stringify({
+        recipient: selectedUserId,
+        text: newMessageText,
+      })
+    );
+    setNewMessageText("");
+    setMessages((prev) => [
+      ...prev,
+      {
+        text: newMessageText,
+        sender: id,
+        recipient: selectedUserId,
+        id: Date.now(),
+      },
+    ]);
+  }
+
   const onlinePeopleExcl0User = { ...onlinePeople };
   delete onlinePeopleExcl0User[id];
+
+  const messagesWithoutDupes = uniqBy(messages, "id");
 
   return (
     <div className="flex h-screen font-poppins">
@@ -69,30 +97,58 @@ const Chat = () => {
               </div>
             </div>
           )}
+          {!!selectedUserId && (
+            <div className="overflow-y-scroll">
+              {messagesWithoutDupes.map((message) => (
+                <div
+                  className={message.sender === id ? "text-right" : "text-left"}
+                >
+                  <div
+                    className={
+                      "text-left inline-block p-2 my-2 rounded-md text-sm " +
+                      (message.sender === id
+                        ? "bg-blue-500 text-white"
+                        : "bg-white text-gray-500")
+                    }
+                  >
+                    {message.sender === id ? "Me: " : ""}
+                    {message.text}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
-        <div className="flex gap-2">
-          <input
-            type="text"
-            className="bg-white flex-grow border p-2 rounded-sm "
-            placeholder="Type your message here"
-          />
-          <button className="bg-blue-500 p-2 text-white rounded-sm ">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              strokeWidth={1.5}
-              stroke="currentColor"
-              className="w-6 h-6"
+        {!!selectedUserId && (
+          <form onSubmit={sendMessage} className="flex gap-2">
+            <input
+              value={newMessageText}
+              onChange={(ev) => setNewMessageText(ev.target.value)}
+              type="text"
+              className="bg-white flex-grow border p-2 rounded-sm  "
+              placeholder="Type your message here"
+            />
+            <button
+              type="submit"
+              className="bg-blue-500 p-2 text-white rounded-sm "
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5"
-              />
-            </svg>
-          </button>
-        </div>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth={1.5}
+                stroke="currentColor"
+                className="w-6 h-6"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5"
+                />
+              </svg>
+            </button>
+          </form>
+        )}
       </div>
     </div>
   );
