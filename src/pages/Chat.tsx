@@ -1,6 +1,6 @@
 import { useEffect, useState, useContext, useRef } from "react";
 import Avatar from "../components/Avatar.jsx";
-import { uniqBy } from "lodash";
+import { keyBy, uniqBy } from "lodash";
 import { UserContext } from "../UserContext.js";
 import axios from "axios";
 
@@ -21,7 +21,11 @@ const Chat = () => {
     const ws = new WebSocket("ws://localhost:5050");
     setWs(ws);
     ws.addEventListener("message", handleMessage);
-    ws.addEventListener("close", () => connectToWs());
+    ws.addEventListener("close", () => {
+      setTimeout(() => {
+        connectToWs();
+      }, 1000);
+    });
   }
 
   function showOnlinePeople(peopleArray) {
@@ -56,7 +60,7 @@ const Chat = () => {
         text: newMessageText,
         sender: id,
         recipient: selectedUserId,
-        id: Date.now(),
+        _id: Date.now(),
       },
     ]);
   }
@@ -70,14 +74,16 @@ const Chat = () => {
 
   useEffect(() => {
     if (selectedUserId) {
-      axios.get("/messages/" + selectedUserId);
+      axios.get("/messages/" + selectedUserId).then((res) => {
+        setMessages(res.data);
+      });
     }
   }, [selectedUserId]);
 
   const onlinePeopleExcl0User = { ...onlinePeople };
   delete onlinePeopleExcl0User[id];
 
-  const messagesWithoutDupes = uniqBy(messages, "id");
+  const messagesWithoutDupes = uniqBy(messages, "_id");
 
   return (
     <div className="flex h-screen font-poppins">
@@ -122,6 +128,7 @@ const Chat = () => {
               <div className="overflow-y-scroll absolute top-0 left-0 right-0 bottom-2">
                 {messagesWithoutDupes.map((message) => (
                   <div
+                    key={message._id}
                     className={
                       message.sender === id ? "text-right" : "text-left"
                     }
