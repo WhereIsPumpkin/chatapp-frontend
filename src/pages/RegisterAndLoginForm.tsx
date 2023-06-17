@@ -6,6 +6,7 @@ import logo from "../assets/logo.png";
 
 const RegisterAndLoginForm = () => {
   const navigate = useNavigate();
+  const [avatar, setAvatar] = useState<File>();
   const [username, setUsername] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [email, setEmail] = useState<string>("");
@@ -17,11 +18,27 @@ const RegisterAndLoginForm = () => {
 
     const url = isLoginOrRegister === "register" ? "register" : "login";
 
-    const { data } = await axios.post(url, { username, password, email });
+    const formData = new FormData();
+    formData.append("username", username);
+    formData.append("password", password);
+    formData.append("email", email);
+    if (avatar) {
+      formData.append("avatar", avatar);
+    }
+
+    const { data } = await axios.post(url, formData);
     setLoggedInUsername(username);
     setId(data.id);
   };
 
+  function handleAvatarChange(e) {
+    if (e.target.files.length > 0) {
+      setAvatar(e.target.files[0]);
+      console.log(e.target.files[0]);
+    } else {
+      console.log("No avatar selected");
+    }
+  }
   return (
     <div className="bg-white h-screen flex flex-col gap-12 items-center px-7 pt-12 font-poppins">
       <img src={logo} className="w-40 h-30" />
@@ -71,6 +88,32 @@ const RegisterAndLoginForm = () => {
               className="block w-full focus:outline-none rounded-sm p-2  border-b border-customGray text-xs font-normal"
             />
           </div>
+          {isLoginOrRegister === "register" && (
+            <label className="flex items-center gap-1 border-b p-2 border-customGray">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth={1.5}
+                stroke="currentColor"
+                className="w-4 h-4"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M18.375 12.739l-7.693 7.693a4.5 4.5 0 01-6.364-6.364l10.94-10.94A3 3 0 1119.5 7.372L8.552 18.32m.009-.01l-.01.01m5.699-9.941l-7.81 7.81a1.5 1.5 0 002.112 2.13"
+                />
+              </svg>
+              <span className="text-placeholder font-normal text-xs">
+                Choose Avatar
+              </span>
+              <input
+                type="file"
+                className="hidden"
+                onChange={handleAvatarChange}
+              />
+            </label>
+          )}
         </div>
         {isLoginOrRegister === "login" && (
           <div className="text-right">

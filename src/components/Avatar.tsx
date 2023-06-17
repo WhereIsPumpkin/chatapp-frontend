@@ -1,9 +1,15 @@
+import axios from "axios";
+
 interface AvatarProps {
   userId: string;
   username: string;
+  online?: boolean;
+  profilePic: string;
 }
 
-const Avatar = ({ userId, username, online }: AvatarProps) => {
+const Avatar = ({ userId, username, online, profilePic }: AvatarProps) => {
+  profilePic = axios.defaults.baseURL + "/" + profilePic;
+
   const colors = [
     "bg-teal-200",
     "bg-red-200",
@@ -16,12 +22,24 @@ const Avatar = ({ userId, username, online }: AvatarProps) => {
     "bg-fuchsia-200",
     "bg-rose-200",
   ];
+
   const userIdBase10 = parseInt(userId, 16);
   const colorIndex = userIdBase10 % colors.length;
   const color = colors[colorIndex];
+
   return (
-    <div className={"w-8 h-8 relative rounded-full flex items-center " + color}>
-      <div className="text-center w-full">{username[0]}</div>
+    <div
+      className={
+        "w-8 h-8 relative rounded-full flex items-center overflow-hidden " +
+        color
+      }
+    >
+      <img
+        src={profilePic}
+        alt="avatarIMG"
+        style={{ width: "100%", height: "100%", objectFit: "cover" }}
+      />
+
       {online && (
         <div className="absolute w-3 h-3 bg-green-400 bottom-0 right-0 rounded-full border border-white "></div>
       )}

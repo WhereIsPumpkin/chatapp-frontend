@@ -6,6 +6,8 @@ interface UserContextValue {
   setUsername: (value: string) => void;
   id: number | null;
   setId: (value: number | null) => void;
+  profilePic: string;
+  setProfilePic: (value: string) => void;
 }
 
 export const UserContext = createContext<UserContextValue>({
@@ -15,6 +17,9 @@ export const UserContext = createContext<UserContextValue>({
   id: null,
   // eslint-disable-next-line @typescript-eslint/no-empty-function
   setId: () => {},
+  profilePic: "",
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  setProfilePic: () => {},
 });
 
 interface UserContextProviderProps {
@@ -23,17 +28,22 @@ interface UserContextProviderProps {
 
 export function UserContextProvider({ children }: UserContextProviderProps) {
   const [username, setUsername] = useState<string>("");
+  const [profilePic, setProfilePic] = useState<string>("");
   const [id, setId] = useState<number | null>(null);
 
   useEffect(() => {
     axios.get("/profile").then((response) => {
       setId(response.data.userId);
       setUsername(response.data.username);
+      setProfilePic("/" + response.data.avatar);
+      console.log(response.data);
     });
   }, []);
 
   return (
-    <UserContext.Provider value={{ username, setUsername, id, setId }}>
+    <UserContext.Provider
+      value={{ username, setUsername, id, setId, setProfilePic, profilePic }}
+    >
       {children}
     </UserContext.Provider>
   );
