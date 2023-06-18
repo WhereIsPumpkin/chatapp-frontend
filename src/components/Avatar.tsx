@@ -28,22 +28,22 @@ const Avatar = ({ userId, username, online, profilePic }: AvatarProps) => {
   const color = colors[colorIndex];
 
   return (
-    <div
-      className={
-        "w-8 h-8 relative rounded-full flex items-center overflow-hidden " +
-        color
-      }
-    >
-      <img
-        src={profilePic}
-        alt="avatarIMG"
-        style={{ width: "100%", height: "100%", objectFit: "cover" }}
-      />
-
+    <div className="relative">
+      <div
+        className={
+          "w-8 h-8 relative rounded-full flex items-center overflow-hidden " +
+          color
+        }
+      >
+        <img
+          src={profilePic}
+          alt="avatarIMG"
+          style={{ width: "100%", height: "100%", objectFit: "cover" }}
+        />
+      </div>
       {online && (
         <div className="absolute w-3 h-3 bg-green-400 bottom-0 right-0 rounded-full border border-white "></div>
       )}
-
       {!online && (
         <div className="absolute w-3 h-3 bg-gray-200 bottom-0 right-0 rounded-full border border-white "></div>
       )}

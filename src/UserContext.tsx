@@ -36,7 +36,6 @@ export function UserContextProvider({ children }: UserContextProviderProps) {
       setId(response.data.userId);
       setUsername(response.data.username);
       setProfilePic("/" + response.data.avatar);
-      console.log(response.data);
     });
   }, []);
 

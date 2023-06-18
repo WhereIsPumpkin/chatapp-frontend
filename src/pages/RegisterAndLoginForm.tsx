@@ -25,10 +25,18 @@ const RegisterAndLoginForm = () => {
     if (avatar) {
       formData.append("avatar", avatar);
     }
-
-    const { data } = await axios.post(url, formData);
-    setLoggedInUsername(username);
-    setId(data.id);
+    if (isLoginOrRegister === "login") {
+      const { data } = await axios.post(url, {
+        username,
+        password,
+      });
+      setLoggedInUsername(username);
+      setId(data.id);
+    } else {
+      const { data } = await axios.post(url, formData);
+      setLoggedInUsername(username);
+      setId(data.id);
+    }
   };
 
   function handleAvatarChange(e) {

@@ -32,9 +32,11 @@ const Chat = () => {
 
   function showOnlinePeople(peopleArray) {
     const people = {};
+    console.log(peopleArray);
     peopleArray.forEach(({ userId, username, avatar }) => {
-      people[userId] = username;
+      people[userId] = { username, avatar };
     });
+    console.log(people);
     setOnlinePeople(people);
   }
 
@@ -44,7 +46,7 @@ const Chat = () => {
       showOnlinePeople(messageData.online);
     } else if ("text" in messageData) {
       if (messageData.sender === selectedUserId) {
-        setMessages((prev) => [...prev, { ...messageData }]);
+        setMessages((prevMessages) => [...prevMessages, { ...messageData }]);
       }
     }
   }
@@ -58,7 +60,6 @@ const Chat = () => {
         file,
       })
     );
-
     if (file) {
       axios.get("/messages/" + selectedUserId).then((res) => {
         setMessages(res.data);
@@ -75,6 +76,7 @@ const Chat = () => {
         },
       ]);
     }
+    console.log(messages);
   }
 
   function sendFile(ev) {
@@ -125,6 +127,14 @@ const Chat = () => {
     });
   }
 
+  useEffect(() => {
+    if (selectedUserId && ws) {
+      axios.get("/messages/" + selectedUserId).then((res) => {
+        setMessages(res.data);
+      });
+    }
+  }, [selectedUserId, ws]);
+
   const onlinePeopleExcl0User = { ...onlinePeople };
   delete onlinePeopleExcl0User[id];
 
@@ -146,7 +156,7 @@ const Chat = () => {
               key={userId}
               id={userId}
               online={true}
-              username={onlinePeopleExcl0User[userId]}
+              username={onlinePeopleExcl0User[userId].username}
               onClick={() => setSelectedUserId(userId)}
               selected={userId === selectedUserId}
               profilePic={onlinePeopleExcl0User[userId].avatar}
