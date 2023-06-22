@@ -1,19 +1,36 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { useEffect, useState, useContext, useRef } from "react";
-import Avatar from "../components/Avatar.jsx";
 import Contact from "../components/Contact.js";
-import { keyBy, uniqBy } from "lodash";
+import { uniqBy } from "lodash";
 import { UserContext } from "../UserContext.js";
 import axios from "axios";
 
+interface Person {
+  _id: string;
+  username: string;
+  avatar: string;
+}
+
+interface User {
+  username: string;
+  avatar: string;
+}
+
 const Chat = () => {
-  const [ws, setWs] = useState(null);
+  const [ws, setWs] = useState<WebSocket | null>(null);
   const [onlinePeople, setOnlinePeople] = useState({});
-  const [selectedUserId, setSelectedUserId] = useState(null);
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const [newMessageText, setNewMessageText] = useState("");
-  const [offlinePeople, setOfflnePeople] = useState({});
-  const [messages, setMessages] = useState([]);
-  const { username, id, setId, setUsername } = useContext(UserContext);
-  const divUnderMessages = useRef();
+  const [offlinePeople, setOfflinePeople] = useState<{
+    [userId: string]: Person;
+  }>({});
+
+  const [messages, setMessages] = useState<
+    { sender: string; text: string; file: string | null; _id: number }[]
+  >([]);
+
+  const { id, setId, setUsername } = useContext(UserContext);
+  const divUnderMessages = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     connectToWs();
@@ -23,6 +40,9 @@ const Chat = () => {
     const ws = new WebSocket("ws://localhost:5050");
     setWs(ws);
     ws.addEventListener("message", handleMessage);
+    ws.onmessage = (event) => {
+      handleMessage(JSON.parse(event.data));
+    };
     ws.addEventListener("close", () => {
       setTimeout(() => {
         connectToWs();
@@ -30,13 +50,13 @@ const Chat = () => {
     });
   }
 
-  function showOnlinePeople(peopleArray) {
-    const people = {};
-    console.log(peopleArray);
+  function showOnlinePeople(
+    peopleArray: { userId: string; username: string; avatar: string }[]
+  ) {
+    const people: { [key: string]: { username: string; avatar: string } } = {};
     peopleArray.forEach(({ userId, username, avatar }) => {
       people[userId] = { username, avatar };
     });
-    console.log(people);
     setOnlinePeople(people);
   }
 
@@ -45,21 +65,28 @@ const Chat = () => {
     if ("online" in messageData) {
       showOnlinePeople(messageData.online);
     } else if ("text" in messageData) {
-      if (messageData.sender === selectedUserId) {
+      if (
+        messageData.sender === selectedUserId ||
+        messageData.recipient === id
+      ) {
         setMessages((prevMessages) => [...prevMessages, { ...messageData }]);
       }
     }
   }
 
-  function sendMessage(ev, file = null) {
+  function sendMessage(ev: React.FormEvent | null, file: File | null = null) {
     if (ev) ev.preventDefault();
-    ws.send(
-      JSON.stringify({
-        recipient: selectedUserId,
-        text: newMessageText,
-        file,
-      })
-    );
+
+    if (ws) {
+      ws.send(
+        JSON.stringify({
+          recipient: selectedUserId,
+          text: newMessageText,
+          file,
+        })
+      );
+    }
+
     if (file) {
       axios.get("/messages/" + selectedUserId).then((res) => {
         setMessages(res.data);
@@ -70,24 +97,27 @@ const Chat = () => {
         ...prev,
         {
           text: newMessageText,
-          sender: id,
+          sender: String(id),
           recipient: selectedUserId,
           _id: Date.now(),
+          file: null,
         },
       ]);
     }
-    console.log(messages);
   }
 
-  function sendFile(ev) {
-    const reader = new FileReader();
-    reader.readAsDataURL(ev.target.files[0]);
-    reader.onload = () => {
-      sendMessage(null, {
-        name: ev.target.files[0].name,
-        data: reader.result,
-      });
-    };
+  function sendFile(ev: React.ChangeEvent<HTMLInputElement>) {
+    if (ev.target.files && ev.target.files.length > 0) {
+      const file = ev.target.files[0];
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => {
+        sendMessage(null, {
+          name: file.name,
+          data: reader.result,
+        });
+      };
+    }
   }
 
   useEffect(() => {
@@ -98,18 +128,18 @@ const Chat = () => {
   }, [messages]);
 
   useEffect(() => {
-    axios.get("/people").then((res) => {
+    axios.get<Person[]>("/people").then((res) => {
       const offlinePeopleArr = res.data
         .filter((p) => p._id !== id)
         .filter((p) => !Object.keys(onlinePeople).includes(p._id));
-      const offlinePeople = {};
+      const offlinePeople: { [key: string]: Person } = {};
 
       offlinePeopleArr.forEach((p) => {
         offlinePeople[p._id] = p;
       });
-      setOfflnePeople(offlinePeople);
+      setOfflinePeople(offlinePeople);
     });
-  }, [onlinePeople]);
+  }, [id, onlinePeople]);
 
   useEffect(() => {
     if (selectedUserId) {
@@ -135,8 +165,11 @@ const Chat = () => {
     }
   }, [selectedUserId, ws]);
 
-  const onlinePeopleExcl0User = { ...onlinePeople };
-  delete onlinePeopleExcl0User[id];
+  const onlinePeopleExcl0User: { [userId: string]: User } = { ...onlinePeople };
+
+  if (id !== null) {
+    delete onlinePeopleExcl0User[id];
+  }
 
   const messagesWithoutDupes = uniqBy(messages, "_id");
 
@@ -144,7 +177,7 @@ const Chat = () => {
     <div className="flex h-screen font-poppins">
       <div className="bg-white w-1/3 flex flex-col">
         <div
-          className="text-blue-600 font-bold font-poppins flex items-center  p-4
+          className="text-blue-600 font-bold font-poppins flex items-center p-4 max-[400px]:pl-4 max-[400px]:text-sm
         "
         >
           ConnectChat
@@ -175,15 +208,31 @@ const Chat = () => {
             />
           ))}
         </div>
-        <div className="p-2 text-center">
+
+        <div className="p-2 text-center ml-auto mr-auto">
           <button
             onClick={logout}
-            className="text-sm bg-blue-100 py-1 px-2 text-gray-500 border rounded-sm"
+            className="text-sm bg-blue-100 py-1 px-2 text-gray-500 border rounded-sm flex gap-1 items-center"
           >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={1.5}
+              stroke="currentColor"
+              className="w-4 h-4"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75"
+              />
+            </svg>
             logout
           </button>
         </div>
       </div>
+
       <div className="flex flex-col bg-blue-50 w-2/3 p-2">
         <div className="flex-grow">
           {!selectedUserId && (
@@ -256,13 +305,10 @@ const Chat = () => {
               value={newMessageText}
               onChange={(ev) => setNewMessageText(ev.target.value)}
               type="text"
-              className="bg-white flex-grow border p-2 rounded-sm  "
+              className="bg-white flex-grow border p-2 rounded-sm max-[400px]:w-[20px] "
               placeholder="Type your message here"
             />
-            <label
-              type="button"
-              className="bg-blue-200 p-2 text-gray-600 rounded-sm border border-blue-200 cursor-pointer"
-            >
+            <label className="bg-blue-200 p-2 text-gray-600 rounded-sm border border-blue-200 cursor-pointer">
               <input
                 type="file"
                 className="hidden cursor-pointer"

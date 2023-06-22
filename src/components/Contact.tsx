@@ -1,5 +1,14 @@
 import Avatar from "./Avatar.jsx";
 
+interface ContactProps {
+  id: string;
+  username: string;
+  onClick: (id: string) => void;
+  selected: boolean;
+  online: boolean;
+  profilePic: string;
+}
+
 export default function Contact({
   id,
   username,
@@ -7,7 +16,7 @@ export default function Contact({
   selected,
   online,
   profilePic,
-}) {
+}: ContactProps) {
   return (
     <div
       key={id}

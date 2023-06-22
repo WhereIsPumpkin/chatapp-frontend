@@ -2,10 +2,10 @@ import axios from "axios";
 import { createContext, useState, useEffect } from "react";
 
 interface UserContextValue {
-  username: string;
-  setUsername: (value: string) => void;
-  id: number | null;
-  setId: (value: number | null) => void;
+  username: string | null;
+  setUsername: (value: string | null) => void;
+  id: number | string | null;
+  setId: (value: number | string | null) => void;
   profilePic: string;
   setProfilePic: (value: string) => void;
 }
@@ -27,9 +27,9 @@ interface UserContextProviderProps {
 }
 
 export function UserContextProvider({ children }: UserContextProviderProps) {
-  const [username, setUsername] = useState<string>("");
+  const [username, setUsername] = useState<string | null>("");
   const [profilePic, setProfilePic] = useState<string>("");
-  const [id, setId] = useState<number | null>(null);
+  const [id, setId] = useState<number | string | null>(null);
 
   useEffect(() => {
     axios.get("/profile").then((response) => {

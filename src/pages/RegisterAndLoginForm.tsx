@@ -1,5 +1,5 @@
 import axios from "axios";
-import { useState, FormEvent, useContext } from "react";
+import { useState, FormEvent, useContext, ChangeEvent } from "react";
 import { UserContext } from "../UserContext.tsx";
 import { useNavigate } from "react-router-dom";
 import logo from "../assets/logo.png";
@@ -11,13 +11,31 @@ const RegisterAndLoginForm = () => {
   const [password, setPassword] = useState<string>("");
   const [email, setEmail] = useState<string>("");
   const [isLoginOrRegister, setIsLoginOrRegister] = useState("login");
+  const [emailError, setEmailError] = useState("");
+  const [passwordError, setPasswordError] = useState("");
   const { setUsername: setLoggedInUsername, setId } = useContext(UserContext);
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    const url = isLoginOrRegister === "register" ? "register" : "login";
+    // Validate email and password
+    if (isLoginOrRegister === "register") {
+      if (!validateEmail(email)) {
+        setEmailError("Please enter a valid email address.");
+        return;
+      } else {
+        setEmailError("");
+      }
 
+      if (!validatePassword(password)) {
+        setPasswordError("Password must be at least 8 characters long.");
+        return;
+      } else {
+        setPasswordError("");
+      }
+    }
+
+    const url = isLoginOrRegister === "register" ? "register" : "login";
     const formData = new FormData();
     formData.append("username", username);
     formData.append("password", password);
@@ -26,10 +44,7 @@ const RegisterAndLoginForm = () => {
       formData.append("avatar", avatar);
     }
     if (isLoginOrRegister === "login") {
-      const { data } = await axios.post(url, {
-        username,
-        password,
-      });
+      const { data } = await axios.post(url, { username, password });
       setLoggedInUsername(username);
       setId(data.id);
     } else {
@@ -39,18 +54,29 @@ const RegisterAndLoginForm = () => {
     }
   };
 
-  function handleAvatarChange(e) {
-    if (e.target.files.length > 0) {
+  function handleAvatarChange(e: ChangeEvent<HTMLInputElement>) {
+    if (e.target.files && e.target.files.length > 0) {
       setAvatar(e.target.files[0]);
       console.log(e.target.files[0]);
     } else {
       console.log("No avatar selected");
     }
   }
+
+  function validateEmail(email: string) {
+    // Email validation regex
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  }
+
+  function validatePassword(password: string) {
+    return password.length >= 8;
+  }
+
   return (
     <div className="bg-white h-screen flex flex-col gap-12 items-center px-7 pt-12 font-poppins">
       <img src={logo} className="w-40 h-30" />
-      <form className="w-full mx-auto mb-12" onSubmit={handleSubmit}>
+      <form className="mx-auto mb-12 w-full max-w-lg " onSubmit={handleSubmit}>
         <div className="flex flex-col gap-5 mb-4">
           {isLoginOrRegister === "register" && (
             <div className="flex flex-col gap-[5px]">
@@ -62,10 +88,13 @@ const RegisterAndLoginForm = () => {
               <input
                 value={email}
                 onChange={(el) => setEmail(el.target.value)}
-                type="Email"
+                type="email"
                 placeholder="Email"
                 className="block w-full rounded-sm p-2 mb-2 border-b border-customGray font-normal focus:outline-none text-xs "
               />
+              {emailError && (
+                <span className="text-red-500 text-xs">{emailError}</span>
+              )}
             </div>
           )}
           <div className="flex flex-col gap-[5px]">
@@ -95,6 +124,9 @@ const RegisterAndLoginForm = () => {
               placeholder="Password"
               className="block w-full focus:outline-none rounded-sm p-2  border-b border-customGray text-xs font-normal"
             />
+            {passwordError && (
+              <span className="text-red-500 text-xs">{passwordError}</span>
+            )}
           </div>
           {isLoginOrRegister === "register" && (
             <label className="flex items-center gap-1 border-b p-2 border-customGray">
@@ -140,7 +172,7 @@ const RegisterAndLoginForm = () => {
         <div className="text-center mt-2">
           {isLoginOrRegister === "register" && (
             <div className="text-[#ABB4BD] text-xs font-normal">
-              Already a memeber?{" "}
+              Already a member?{" "}
               <button
                 className="text-customBlue text-xs font-normal"
                 onClick={() => setIsLoginOrRegister("login")}

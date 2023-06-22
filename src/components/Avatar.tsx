@@ -7,7 +7,7 @@ interface AvatarProps {
   profilePic: string;
 }
 
-const Avatar = ({ userId, username, online, profilePic }: AvatarProps) => {
+const Avatar = ({ userId, online, profilePic }: AvatarProps) => {
   profilePic = axios.defaults.baseURL + "/" + profilePic;
 
   const colors = [
