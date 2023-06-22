@@ -112,10 +112,8 @@ const Chat = () => {
       const reader = new FileReader();
       reader.readAsDataURL(file);
       reader.onload = () => {
-        sendMessage(null, {
-          name: file.name,
-          data: reader.result,
-        });
+        const fileToSend = new File([reader.result as ArrayBuffer], file.name);
+        sendMessage(null, fileToSend);
       };
     }
   }
