@@ -110,9 +110,12 @@ const Chat = () => {
     if (ev.target.files && ev.target.files.length > 0) {
       const file = ev.target.files[0];
       const reader = new FileReader();
-      reader.readAsDataURL(file);
+      reader.readAsArrayBuffer(file);
       reader.onload = () => {
-        const fileToSend = new File([reader.result as ArrayBuffer], file.name);
+        const arrayBuffer = reader.result as ArrayBuffer;
+        const fileToSend = new File([arrayBuffer], file.name, {
+          type: file.type,
+        });
         sendMessage(null, fileToSend);
       };
     }
