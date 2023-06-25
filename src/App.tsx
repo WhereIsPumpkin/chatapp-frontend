@@ -7,8 +7,7 @@ import UpdatePassowrd from "./pages/RecoverPassword";
 import ForgotPassowrd from "./pages/ForgotPassowrd";
 
 function App() {
-  axios.defaults.baseURL =
-    "https://chatapp-backend-production-9079.up.railway.app";
+  axios.defaults.baseURL = "http://localhost:5050";
   axios.defaults.withCredentials = true;
 
   return (

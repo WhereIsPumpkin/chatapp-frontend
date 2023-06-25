@@ -37,7 +37,9 @@ const Chat = () => {
   }, []);
 
   function connectToWs() {
-    const ws = new WebSocket("ws://localhost:5050");
+    const ws = new WebSocket(
+      "wss://chatapp-backend-production-9079.up.railway.app"
+    );
     setWs(ws);
     ws.addEventListener("message", handleMessage);
     ws.onmessage = (event) => {
